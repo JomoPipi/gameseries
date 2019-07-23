@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<head>
+    <style>
+        * {
+            margin:0;
+            padding:0;
+        }
+        #ctx {
+            background-color: blanchedalmond;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="ctx" width="500" height="500"></canvas>
+    <script>
+        const D = x => document.getElementById(x)
+        const ctx = D("ctx").getContext('2d')
+        function Brick(x,y,w,h) {
+            this.x = x
+            this.y = y
+            this.w = 20
+            this.h = 5
+            this.color = '#' + ~~(Math.random()*999)
+            this.draw = _ => 
+                draw(_ => { 
+                    this.color
+                    ctx.rect(this.x,this.y,this.w,this.h)
+                })
+        }
+    </script>
+</body>

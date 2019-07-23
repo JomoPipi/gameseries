@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<head>
+    <style>
+        body { background-image: url("background.jpeg"); }
+        h1 {
+            margin-top: 10%;
+            margin-bottom: 5%;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 4em;
+        }
+        .sq {
+            display:inline-block;
+            vertical-align:top;
+            border-top: 2px solid #DDD;
+            border-left: 2px solid #DDD;
+            border-right: 2px solid #555;
+            border-bottom: 2px solid #555;
+            background-color:rgba(50,50,50,0.8);
+            height:60px;
+            width: 60px;
+        }
+        .redsq{ background-color:rgba(250,50,50,0.4); }
+    </style>
+    <script src="https://files-vywkyjgojz.now.sh"></script>
+</head>
+<body>
+    <center>
+        <h1 id="main-text"></h1>
+        <div id="main"></div>
+    </center>
+</body>
+<script>
+    const I = x => document.getElementById(x),
+    audioCtx = new (window.AudioContext || window.webkitAudioContext),
+    E = x => document.createElement(x),
+    H = 15, W = 8,
+    M = Array(H).fill().map(x=>Array(W).fill(0)), 
+    hundrethRootOf2 = 2**(1/50.0),
+    tone = audioCtx.createOscillator()
+    tone.type = 'triangle'
+    startScreenSetup(() => tone.start())
+    addSpeaker(audioCtx)
+
+    let left = 0,  lastLeft,
+        right = 3, lastRight,
+        row = H-1,
+        time = 0, 
+        dx = 1
+    function setupGame() {
+        const NODE = I('main')
+        // remove squares
+        let child = NODE.lastElementChild;  
+        while (child) { 
+            NODE.removeChild(child); 
+            child = NODE.lastElementChild; 
+        } 
+        // create all the damn squares
+        for (let r = 0; r < H; r++)
+            for (let c = 0; c < W; c++) {
+                const sq = E('div')
+                NODE.appendChild(sq)
+                I(sq.id = r+'-'+c).classList.add('sq')
+                if (c === W-1) {
+                    const linebreak = E('div')
+                    linebreak.style.clear = 'left'
+                    NODE.appendChild(linebreak)
+                }
+            }
+        left = 0,  lastLeft = null
+        right = 3, lastRight = null
+        row = H-1, time = 0, dx = 1
+        tone.frequency.value = 220
+
+        I('main-text').style.color = 'black'
+        I('main-text').innerHTML = 'STACK IT UP'
+    }
+    setupGame()
+    setInterval(() => {
+        time++
+        let rate = ~~(row/2 + 2) 
+        tone[(time/rate % 1 ? '':'dis') + 'connect'](audioCtx.destination)
+
+        if (time % rate === 0) {
+
+            for (let c = left; c <= right; c++) 
+                I(row + '-' + c).classList.remove('redsq')
+
+            left += dx
+            right += dx
+
+            for (let c = left; c <= right; c++) 
+                I(row + '-' + c).classList.add('redsq')
+
+            if (left === 0 || right === W - 1) dx *= -1
+        }
+    }, 30)
+    document.ontouchstart = function(e) {
+        ready = false
+        if (row === H-1) {
+            lastLeft = left
+            lastRight = right
+            row--
+            ready = true
+            return
+        }
+        while (left < lastLeft) { 
+            I(row + '-' + left).classList.remove('redsq')
+            left++
+        }
+        while (right > lastRight) {
+            I(row + '-' + right).classList.remove('redsq')
+            right--
+        }
+
+        for (let c = left; c <= right; c++) 
+            I(row + '-' + c).classList.add('redsq')
+
+        row--
+        tone.frequency.value *= hundrethRootOf2
+
+        if (left > right) {
+            I('main-text').style.color = 'red'
+            I('main-text').innerHTML = 'YOU LOSE'
+            countDown(_ => setupGame())
+        }
+        if (row === -1) {
+            I('main-text').style.color = 'Green'
+            I('main-text').innerHTML = 'YOU WIN!!'
+            window.location.href = 'https://crazydriva-cuklnwnrlx.now.sh'
+        }
+
+        lastLeft = left
+        lastRight = right
+    }
+</script>

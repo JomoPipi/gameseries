@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<head>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        #ctx {
+            display: block;
+            max-width: 100vw;
+            max-height: 100vh; 
+            background-image: url('img/1.jpg')
+        }
+    </style>
+    <script src="https://files-vywkyjgojz.now.sh"></script>
+</head>
+<body>
+    <canvas id="ctx"></canvas>  
+</body>
+<script>
+    const D = x => document.getElementById(x)
+    const canvas = D('ctx')
+    const ctx = canvas.getContext('2d')
+    const balloonImg = new Image()
+    const balloons = {}
+    const song = document.createElement('AUDIO')
+    const pops = [0,0,0].map((_,i) => {
+        const arr = [0,0,0,0].map((_,j) => {
+            const x = document.createElement('AUDIO')
+            x.src = `audio/pop${i+1}/pop${i+1}.${j}.mp3`
+            x.volume = 0.7
+            return x
+        })
+        arr.iter = 0
+        return arr
+    })
+    balloonImg.src = 'img/balloon.png'
+    song.src = 'audio/song.mp3'
+    song.loop = true
+    startScreenSetup(_ => song.play())
+    addSpeaker(pops.flat().concat(song))
+    window.addEventListener('resize', resizeCanvas, false);
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resizeCanvas()
+    function Balloon (){ 
+        this.id = Math.random()
+        this.x = ~~(Math.random() * canvas.width * 0.7) + 0.2 * canvas.width
+        this.y = canvas.height
+        this.speedY = ~~(Math.random() * -3) - 10
+        this.move = _ => {
+            this.x += ~~(Math.random() * 4) - 2
+            this.y += this.speedY
+        }
+        this.draw = _ => ctx.drawImage(balloonImg, this.x, this.y)
+    }
+    let time = 0, score = 0
+    setInterval(
+        () => { 
+            ctx.clearRect(0,0,canvas.width,canvas.height)
+            for (const i in balloons) {
+                balloons[i].move()
+                balloons[i].draw()
+                if (balloons[i].y < -200) {
+                    delete balloons[i]
+                    score = 0
+                }
+            }
+            if (time++ % 10 === 0) {
+                const b = new Balloon()
+                balloons[b.id] = b
+            }
+            ctx.fillStyle = 'Green'
+            ctx.font = '80px Arial Black'
+            ctx.fillText('score: ' + score, 10, 60)
+        },
+        40
+    )
+    canvas.onclick = canvas.ontouchstart = function(e) {
+        const iterations = e.touches ? e.touches.length : 1
+        iterloop: for (let iters = 0; iters < iterations; iters++) {
+            const x = e.clientX || e.touches[iters].clientX
+            const y = e.clientY || e.touches[iters].clientY 
+            // pop a balloon if hit
+            for (const i in balloons) {
+                const b = balloons[i]
+                if (b.x < x && x < b.x + balloonImg.width &&
+                    b.y < y && y < b.y + balloonImg.height) {
+                    delete balloons[i]
+                    const popSoundType = ~~(Math.random()*3)
+                    const sound = pops[popSoundType]
+                    sound[sound.iter++ % 4].play()
+                    score++
+                    if (score === 100)
+                        window.location.href = 'https://stackitup-vrcwodgpvh.now.sh'
+                    continue iterloop
+                }
+            }
+        }
+    }
+</script>

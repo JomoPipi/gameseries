@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<head>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            
+            /* anti selection stuff */
+            -webkit-touch-callout: none; /* iOS Safari */
+            -webkit-user-select: none; /* Safari */
+            -khtml-user-select: none; /* Konqueror HTML */
+            -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none;
+        }
+        h1 {
+            height: 10vh;
+        }
+        #ctx {
+            border: 1px solid #AAA;
+            background-color: #EEE;
+        }
+        #controls-box {
+            margin-top: 1%;
+            width: 95vw;
+            height: 12vh;
+            border: 1px solid #CCC;
+            background-color: #444;
+        }
+        #left, #right, #brake, #gas {
+            display: inline-block;
+            width: 24%;
+            height: 96%;
+            border-radius: 15px;
+            transform: translate(0, 2%);
+            background-position: center center;  
+            background-size:     cover;
+            background-color: #888;
+        }
+        #left { background-image: url("img/left.png");}
+        #right { background-image: url("img/right.png");}
+        #brake { background-image: url("img/brake.png");}
+        #gas { background-image: url("img/gas.png");}
+    </style>
+    <script src="https://files-vywkyjgojz.now.sh"></script>
+</head>
+<body>
+    <center>
+        <h1 id="text"></h1>
+        <canvas id="ctx" width=920 height=1000></canvas>
+        <div id="controls-box">
+            <div id="left"></div>
+            <div id="right"></div>
+            <div id="brake"></div>
+            <div id="gas"></div>
+        </div>
+    </center>
+</body>
+<script>
+    var render, gameOver
+    const D = x => document.getElementById(x)
+    const canvas = D('ctx')
+    const ctx = canvas.getContext('2d')
+    const crash = document.createElement('AUDIO'); crash.src = 'audio/crash.mp3'
+    const song = document.createElement('AUDIO'); song.src = 'audio/song.mp3'
+    const explosion = new Image(); explosion.src = 'img/explosion.png'
+    const finishLine = new Image(); finishLine.src = 'img/finish.png'
+    ctx.font = '40px Arial'
+    addSpeaker([song,crash])
+    startScreenSetup(_ => song.play())
+    let obstacles, seconds, car
+
+    function setupGame() {
+        gameOver = false
+        obstacles = [...Array(120)].map((_,i) =>
+            ({ x: ~~(Math.random() * canvas.width), y: i * -400, 
+            r: 25 + ~~(Math.random()*50), color:'#' + ~~(Math.random()*1000),
+            text: [...Array(4)].map(_ => String.fromCharCode(65 + ~~(Math.random()*26))).join`` }))
+            obstacles.draw = _ => 
+                obstacles.forEach((o,i) => {
+                    if (0 <= o.y && o.y < canvas.height) {
+                        if (i === obstacles.length-1)
+                            ctx.drawImage(finishLine, 0, o.y)
+                        else {
+                            ctx.fillStyle = o.color
+                            ctx.beginPath()
+                            ctx.arc(o.x, o.y, o.r, 0, 7)
+                            ctx.fill()
+                            ctx.closePath()
+                            ctx.fillStyle = 'red'
+                            ctx.fillText(o.text, o.x-o.r, o.y)
+                        }
+                    }
+                })
+        car = {
+            x: canvas.width/2,
+            y: 9 * canvas.height / 10,
+            img: new Image(),
+            speed: 0,
+            accel: 1.3
+        }
+            car.img.src = 'img/car.png'
+            car.draw = _ => 
+                ctx.drawImage(car.img, car.x-32, car.y + +(car.gas||0) * -10 - 64, 64, 128)
+            car.move = _ => {
+                if (car.left && car.x > 0) car.x -= 30
+                if (car.right && car.x < canvas.width) car.x += 30
+                if (car.gas && car.speed < 100) {
+                    if (car.speed < 1)
+                        car.speed = 1
+                    else
+                        car.speed *= car.accel
+                }
+                if (car.brake) 
+                    if (car.speed > 1)
+                        car.speed /= car.accel
+                    else
+                        car.speed = 0
+
+                obstacles.forEach((o,i) => {
+                    o.y += car.speed
+                    if (i < obstacles.length-1 && ((o.x-car.x)**2 + (o.y-(car.y-32))**2)**0.5 < o.r + 30) {
+                        crash.play()
+                        song.pause()
+                        gameOver = true
+                    }
+                })
+            }
+        D('text').style.color = 'black'
+        D('text').innerHTML = '60 seconds left'
+        seconds = null // will be set on first touch
+        render = setInterval(gameLoop, 40)
+    }
+    setupGame()
+    function gameLoop() {
+        ctx.clearRect(0,0,canvas.width,canvas.height)
+        car.move()
+        car.draw()
+        obstacles.draw()
+        const elapsed = ~~(new Date().getTime() / 1000 - seconds)
+        if (seconds)
+            D('text').innerHTML = elapsed > 60 ?
+            (gameOver = true) :
+            `${60 - elapsed} seconds left`
+        if (obstacles[obstacles.length-1].y > car.y) {
+            D('text').style.color = 'green'
+            D('text').innerHTML = 'YOU WIN!!'
+            clearInterval(render)
+            window.location.href = "https://winpage-ojaywpudfz.now.sh"
+            seconds = null
+        }
+        if (gameOver) {
+            clearInterval(render)
+            ctx.drawImage(explosion, car.x-100, car.y + +(car.gas||0) * -10 - 150, 200, 200)
+            D('text').style.color = 'red'
+            D('text').innerHTML = `YOU LOSE -- ${~~((obstacles.filter(o => o.y > car.y).length/obstacles.length) * 100)}% COMPLETE`
+            countDown(_ => { 
+                if (song.paused) { song.currentTime = 0; song.play() 
+                setupGame()
+            } })
+        }
+    }
+
+    for (const x of ['left','right','brake','gas']) {
+        D(x).ontouchstart = D(x).onmousedown = _ => {
+            if (!seconds) seconds = new Date().getTime() / 1000
+            car[x] = true
+        }
+        D(x).ontouchend = D(x).onmouseup = _ => car[x] = false
+    }
+</script>

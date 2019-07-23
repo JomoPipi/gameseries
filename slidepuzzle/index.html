@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<head>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            background-color: blanchedalmond;
+        }
+        #goal {
+            position: absolute;
+            bottom: 40px;
+            left: 40px;
+        }
+        #goaltext {
+            font-size: 2.4em;
+        }
+        h1 {
+            font-size: 5em;
+        }
+        #up, #down {
+            display: block;
+            width: 266px;
+            height: 240px;
+        }
+        #left, #right, #mid {
+            width: 200px;
+            height: 200px;
+            display: inline-block;
+        }
+        canvas {
+            border: 10px solid black;
+        }
+    </style>
+    <script src="https://files-rnqgflyyrq.now.sh"></script>
+    <!-- <script src="../components.js"></script> -->
+</head>
+<body>
+    <center>
+    <h1 id='text'> Solve the puzzle to proceed! </h1> 
+        <canvas id="canvas"></canvas>
+
+        <img id="up" src="img/up.png">
+        <img id="left" src="img/left.png">
+        <div id="mid"></div>
+        <img id="right" src="img/right.png">
+        <img id="down" src="img/down.png">
+    </center>
+    <div id="goal">
+        <div id="goaltext">goal:</div>
+        <img src='img/15puzzle.jpg' height="200" width="200">
+    </div>
+    
+</body>
+<script>
+    const D = x => document.getElementById(x)
+    const ctx = canvas.getContext('2d'), N = 4
+    let time = 0, SLIDING = [false], m, n, key, solvedState
+    const Img = new Image(); Img.src =  'img/15puzzle.jpg'
+    const way = ['up','left','down','right'], dir = {}, pieces = {}
+    way.forEach(w => {
+        const W = D(w)
+        W.onmousedown = W.ontouchstart = _ => dir[w] = true
+        W.onmouseup = W.ontouchend = _ => dir[w] = false
+    })
+    let map = { 87:'up',65:'left',83:'down',68:'right'}
+    const song = document.createElement('audio')
+    song.src = 'audio/song.mp3'; song.loop = true
+    const spkr = addSpeaker(song)
+    spkr.style.top = spkr.style.left = ''
+    spkr.style.bottom = spkr.style.right = '60px'
+    startScreenSetup(_ => song.play())
+
+    Img.onload = () => {
+        key = (N-1) + ':' + (N-1)
+        n = Img.width, m = []
+        canvas.width = canvas.height = n
+        for (let r = 0; r < N; r++) {
+            const row = []
+            for (let c = 0; c < N; c++) {
+                let k = r+':'+c
+                // indexes 4,5 are the x,y locations on the canvas
+                // indexes 2,3 are the 2,3 of the matrix
+                // indexes 0,1 capture the necessary area of the original image
+                pieces[k] = [c*(n/N),r*(n/N),r,c,c*(n/N),r*(n/N)]
+                row.push([k])
+            }
+            m.push(row)
+        }
+        solvedState = m.toString()
+        const autoScramble = (pieces, x) => {
+            for (let i = 0; i < x; i++) {
+                dir[way[~~(Math.random()*4)]] = true
+                move(pieces,false);
+            }
+        }
+        autoScramble(pieces, 10000);
+    }
+    document.onkeydown = event => dir[map[event.keyCode]] = true
+    document.onkeyup = event => dir[map[event.keyCode]] = false
+
+    // make up down left right buttons
+
+    function move(pieces,animation) {
+        let C = pieces[key][3], R = pieces[key][2]
+        const D = [['up',R>0,-1,0],['down',R<N-1,1,0],['left',C>0,0,-1],['right',C<N-1,0,1]]
+        for (let d of D)
+            if (dir[d[0]] && d[1]) {
+                dir[d[0]] = false
+
+                const otherp = m[R+d[2]][C+d[3]]
+
+                if (animation) 
+                {
+                    SLIDING = [
+                        key,
+                        otherp,
+                        pieces[key][4],
+                        pieces[key][5], 
+                        pieces[otherp][4],
+                        pieces[otherp][5]
+                    ]
+                } 
+                else 
+                {
+                    // 'instantaneous' change
+                    const tempr = pieces[otherp][4]
+                    const tempc = pieces[otherp][5]
+                    pieces[otherp][4] = pieces[key][4]
+                    pieces[otherp][5] = pieces[key][5]
+                    pieces[key][4] = tempr
+                    pieces[key][5] = tempc
+                }
+                pieces[key][2] = R+d[2]
+                pieces[key][3] = C+d[3]
+                m[R+d[2]][C+d[3]] = key
+                m[R][C] = otherp
+                return
+            }
+    }
+    
+    const drawPieces = () => {
+        m.forEach(r=>r.forEach(x=> {
+            if (x == key) return // comment this out to keep this whole puzzle
+            p=pieces[x];
+            ctx.drawImage(Img, p[0], p[1], n/N, n/N, p[4], p[5], n/N, n/N)
+        })) 
+    }
+
+    const slide = () => {
+        let s = 20, // slide speed
+        k = SLIDING[0], l = SLIDING[1], // current piece locations
+        o1 = SLIDING[2], o2 = SLIDING[3], // desired rc for other piece
+        k1 = SLIDING[4], k2 = SLIDING[5] // desired rc for key piece
+
+        if (pieces[k][4] === k1 && pieces[k][5] === k2
+        &&  pieces[l][4] === o1 && pieces[l][5] === o2) {
+            SLIDING = [false]
+            return
+        }
+
+        if (pieces[k][4] < k1) pieces[k][4] += Math.min( k1-pieces[k][4],s)
+        if (pieces[k][4] > k1) pieces[k][4] -= Math.min(-k1+pieces[k][4],s)
+
+        if (pieces[k][5] < k2) pieces[k][5] += Math.min( k2-pieces[k][5],s)
+        if (pieces[k][5] > k2) pieces[k][5] -= Math.min(-k2+pieces[k][5],s)
+
+        if (pieces[l][4] < o1) pieces[l][4] += Math.min( o1-pieces[l][4],s)
+        if (pieces[l][4] > o1) pieces[l][4] -= Math.min(-o1+pieces[l][4],s)
+
+        if (pieces[l][5] < o2) pieces[l][5] += Math.min( o2-pieces[l][5],s)
+        if (pieces[l][5] > o2) pieces[l][5] -= Math.min(-o2+pieces[l][5],s)
+    }
+
+    let winstate = [true]
+    function update()
+    {
+        if (winstate[0] && m.toString() === solvedState) {
+            winstate[0] = false
+            // victory.play()
+            // window.location.href = next song
+        } else if (m.toString() !== solvedState) winstate[0] = true
+
+        time++
+        let z = 60
+        ctx.fillStyle = '#5F4885' + Math.max(z-time%z-1,time%z)
+        ctx.clearRect(0,0,canvas.width,canvas.height)
+        ctx.fillRect(0,0,canvas.width,canvas.height)
+
+        if (SLIDING[0]) slide();
+
+        else move(pieces, true)
+
+        drawPieces(pieces)
+    }
+    setInterval(update,10)
+</script>  
