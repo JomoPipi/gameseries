@@ -12,7 +12,8 @@
             background-image: url('img/1.jpg')
         }
     </style>
-    <script src="https://files-vywkyjgojz.now.sh"></script>
+    <!-- <script src="https://files-fdqjkiccbu.now.sh"></script> -->
+    <script src="../components.js"></script>
 </head>
 <body>
     <canvas id="ctx"></canvas>  
@@ -37,7 +38,10 @@
     balloonImg.src = 'img/balloon.png'
     song.src = 'audio/song.mp3'
     song.loop = true
-    startScreenSetup(_ => song.play())
+    startScreenSetup({ 
+        func: _ => song.play(),
+        text: 'Welcome to Balloon-Pop. Pop 100 to win!'
+    })
     addSpeaker(pops.flat().concat(song))
     window.addEventListener('resize', resizeCanvas, false);
     function resizeCanvas() {

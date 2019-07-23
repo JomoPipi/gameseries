@@ -42,7 +42,8 @@
         #brake { background-image: url("img/brake.png");}
         #gas { background-image: url("img/gas.png");}
     </style>
-    <script src="https://files-vywkyjgojz.now.sh"></script>
+    <!-- <script src="https://files-vywkyjgojz.now.sh"></script> -->
+    <script src="../components.js"></script>
 </head>
 <body>
     <center>
@@ -67,7 +68,10 @@
     const finishLine = new Image(); finishLine.src = 'img/finish.png'
     ctx.font = '40px Arial'
     addSpeaker([song,crash])
-    startScreenSetup(_ => song.play())
+    startScreenSetup({
+        func: _ => song.play(),
+        text: "Let's play Crazydriva. Don't hit any circles!"
+    })
     let obstacles, seconds, car
 
     function setupGame() {

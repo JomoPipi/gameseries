@@ -21,7 +21,8 @@
         }
         .redsq{ background-color:rgba(250,50,50,0.4); }
     </style>
-    <script src="https://files-vywkyjgojz.now.sh"></script>
+    <!-- <script src="https://files-vywkyjgojz.now.sh"></script> -->
+    <script src="../components.js"></script>
 </head>
 <body>
     <center>
@@ -38,7 +39,10 @@
     hundrethRootOf2 = 2**(1/50.0),
     tone = audioCtx.createOscillator()
     tone.type = 'triangle'
-    startScreenSetup(() => tone.start())
+    startScreenSetup({
+        func: _ => tone.start(),
+        text: "Get ready for Stackitup! <br> Can you reach the top?"
+    })
     addSpeaker(audioCtx)
 
     let left = 0,  lastLeft,

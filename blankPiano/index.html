@@ -31,7 +31,8 @@
                 }
             </style>
             <!-- END CSS DECLARATIONS -->
-            <script src="https://files-vywkyjgojz.now.sh"></script>
+            <!-- <script src="https://files-vywkyjgojz.now.sh"></script> -->
+            <script src="../components.js"></script>
     </head>
     <body >
         <div class="imgbox">
@@ -70,7 +71,10 @@
             last14Notes.join`,` === '0,0,7,7,9,9,7,5,5,4,4,2,2,0' ? 
             window.location.href = 'https://balloonpop-cuapfxaksi.now.sh' : 0
         resetKeys()
-        startScreenSetup(_ => sines.forEach(s => s.start()))
+        startScreenSetup({
+            func: _ => sines.forEach(s => s.start()),
+            text: "Let's learn to play the piano. Follow me!"
+        })
         keyboard.ontouchstart = keyboard.onmousedown = function(e) {
             e.preventDefault();
             const iterations = e.touches ? e.touches.length : 1

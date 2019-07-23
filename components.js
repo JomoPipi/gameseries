@@ -1,15 +1,20 @@
 // TODO: winner component, loser component
 
 // add title
-function startScreenSetup(f) {
-    const startScreen = document.createElement('img')
-    startScreen.style.position = 'absolute'
-    startScreen.style.top = '0px'
-    startScreen.style.left = '0px'
-    startScreen.style.width = '100vw'
-    startScreen.style.height = '100vh'
-    startScreen.style.zIndex = '99'
-    startScreen.src = 'https://i.ibb.co/Nng76s8/Screen-Shot-2019-07-13-at-9-07-04-PM.png'
+function startScreenSetup({func: f, text: t}) {
+    const startScreen = document.createElement('div')
+    const S = startScreen.style
+    S.position = 'absolute'
+    S.display = 'table-cell'
+    S.top = '0px'
+    S.left = '0px'
+    S.width = '100vw'
+    S.height = '100vh'
+    S.zIndex = '99'
+    S.backgroundColor = 'yellow'
+    S.textAlign = 'center'
+    S.font = '8em Georgia'
+    startScreen.innerHTML = t
     document.body.append(startScreen)
     startScreen.onmousedown = function() {
         this.style.display = 'none'

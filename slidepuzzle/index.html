@@ -31,8 +31,8 @@
             border: 10px solid black;
         }
     </style>
-    <script src="https://files-rnqgflyyrq.now.sh"></script>
-    <!-- <script src="../components.js"></script> -->
+    <!-- <script src="https://files-rnqgflyyrq.now.sh"></script> -->
+    <script src="../components.js"></script>
 </head>
 <body>
     <center>
@@ -68,7 +68,10 @@
     const spkr = addSpeaker(song)
     spkr.style.top = spkr.style.left = ''
     spkr.style.bottom = spkr.style.right = '60px'
-    startScreenSetup(_ => song.play())
+    startScreenSetup({
+        func: _ => song.play(),
+        text: "Can you solve Slidepuzzle? <br> Use your focus!"
+    })
 
     Img.onload = () => {
         key = (N-1) + ':' + (N-1)
