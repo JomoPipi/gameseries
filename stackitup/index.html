@@ -99,6 +99,7 @@
         }
     }, 30)
     document.ontouchstart = function(e) {
+        if (row === -1) { console.log('we are here') }
         ready = false
         if (row === H-1) {
             lastLeft = left
@@ -126,6 +127,7 @@
             I('main-text').style.color = 'red'
             I('main-text').innerHTML = 'YOU LOSE'
             countDown(_ => setupGame())
+            return
         }
         if (row === -1) {
             I('main-text').style.color = 'Green'
