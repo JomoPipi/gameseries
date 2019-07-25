@@ -21,7 +21,7 @@
         }
         .redsq{ background-color:rgba(250,50,50,0.4); }
     </style>
-    <!-- <script src="https://files-vywkyjgojz.now.sh"></script> -->
+    <!-- <script src="https://files-fdqjkiccbu.now.sh"></script> -->
     <script src="../components.js"></script>
 </head>
 <body>
@@ -99,7 +99,6 @@
         }
     }, 30)
     document.ontouchstart = function(e) {
-        if (row === -1) { console.log('we are here') }
         ready = false
         if (row === H-1) {
             lastLeft = left
@@ -126,6 +125,7 @@
         if (left > right) {
             I('main-text').style.color = 'red'
             I('main-text').innerHTML = 'YOU LOSE'
+            
             countDown(_ => setupGame())
             return
         }
@@ -133,6 +133,9 @@
             I('main-text').style.color = 'Green'
             I('main-text').innerHTML = 'YOU WIN!!'
             window.location.href = 'https://crazydriva-cuklnwnrlx.now.sh'
+
+            // without this, chrome browser will crash while using device toolbar
+            return false // who knows why?
         }
 
         lastLeft = left
