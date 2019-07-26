@@ -60,9 +60,9 @@
         }
         this.draw = _ => ctx.drawImage(balloonImg, this.x, this.y)
     }
-    let time = 0, score = 0
-    setInterval(
-        () => { 
+    let time = 0, score = 0, render
+    var gameLoop = setInterval(
+        render = _ => { 
             ctx.clearRect(0,0,canvas.width,canvas.height)
             for (const i in balloons) {
                 balloons[i].move()
@@ -97,8 +97,11 @@
                     const sound = pops[popSoundType]
                     sound[sound.iter++ % 4].play()
                     score++
-                    if (score === 100)
-                        window.location.href = 'https://stackitup-vrcwodgpvh.now.sh'
+                    if (score === 100) {
+                        clearInterval(gameLoop)
+                        render() // one more time so we can see that number, 100 ;)
+                        winState('https://stackitup-vrcwodgpvh.now.sh')
+                    }
                     continue iterloop
                 }
             }

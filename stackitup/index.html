@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <head>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
         body { background-image: url("background.jpeg"); }
         h1 {
             margin-top: 10%;
@@ -79,7 +84,7 @@
         I('main-text').innerHTML = 'STACK IT UP'
     }
     setupGame()
-    setInterval(() => {
+    var gameLoop = setInterval(() => {
         time++
         let rate = ~~(row/2 + 2) 
         tone[(time/rate % 1 ? '':'dis') + 'connect'](audioCtx.destination)
@@ -107,14 +112,11 @@
             ready = true
             return
         }
-        while (left < lastLeft) { 
-            I(row + '-' + left).classList.remove('redsq')
-            left++
-        }
-        while (right > lastRight) {
-            I(row + '-' + right).classList.remove('redsq')
-            right--
-        }
+        while (left < lastLeft) 
+            I(row + '-' + left++).classList.remove('redsq')
+
+        while (right > lastRight) 
+            I(row + '-' + right--).classList.remove('redsq')
 
         for (let c = left; c <= right; c++) 
             I(row + '-' + c).classList.add('redsq')
@@ -125,19 +127,22 @@
         if (left > right) {
             I('main-text').style.color = 'red'
             I('main-text').innerHTML = 'YOU LOSE'
-            
-            countDown(_ => setupGame())
+            const touchstart = document.ontouchstart
+            document.ontouchstart = null
+            countDown(_ => {
+                document.ontouchstart = touchstart
+                setupGame()
+            })
             return
         }
         if (row === -1) {
             I('main-text').style.color = 'Green'
             I('main-text').innerHTML = 'YOU WIN!!'
-            window.location.href = 'https://crazydriva-cuklnwnrlx.now.sh'
+            clearInterval(gameLoop)
+            winState('https://crazydriva-cuklnwnrlx.now.sh')
 
-            // without this, chrome browser will crash while using device toolbar
-            return false // who knows why?
+            return false // without this, chrome browser will crash while using device toolbar -- who knows why?
         }
-
         lastLeft = left
         lastRight = right
     }
