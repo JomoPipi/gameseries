@@ -5,7 +5,7 @@ function startScreenSetup({func: f, text: t}) {
     const startScreen = document.createElement('div')
     const S = startScreen.style
     S.position = 'absolute'
-    S.display = 'table-cell'
+    S.display = 'flex'
     S.top = '0px'
     S.left = '0px'
     S.width = '100vw'
@@ -13,6 +13,7 @@ function startScreenSetup({func: f, text: t}) {
     S.zIndex = '99'
     S.backgroundColor = 'yellow'
     S.textAlign = 'center'
+    S.alignItems = 'center'
     S.font = '8em Georgia'
     startScreen.innerHTML = t
     document.body.append(startScreen)

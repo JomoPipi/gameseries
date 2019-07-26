@@ -40,7 +40,7 @@
     song.loop = true
     startScreenSetup({ 
         func: _ => song.play(),
-        text: 'Welcome to Balloon-Pop. Pop 100 to win!'
+        text: "Welcome to Balloon-Pop. Pop 100 to win. Don't let any of them reach the top!"
     })
     addSpeaker(pops.flat().concat(song))
     window.addEventListener('resize', resizeCanvas, false);
