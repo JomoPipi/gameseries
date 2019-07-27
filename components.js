@@ -110,16 +110,16 @@ function winState(link) {
         this.y = y
         this.color = getRandomColor()
         this.x = ~~(Math.random() * canvas.width)
-        this.speed = ~~(Math.random() * 40) + 30
-        this.size = 30 + ~~(Math.random() * 30)
+        this.size = this.speed = ~~(Math.random() * 40) + 30
         this.angle = ~~(Math.random() * 360)
         this.angularSpeed = (~~(Math.random() * 30) - 15) || 1
+        this.extraSpin = Math.random() > 0.9 ? 20 : 0
         this.draw = _ => {
             const angle = this.angle * Math.PI / 180, alpha = (2 * Math.PI) / 10
             ctx.save()
-            ctx.translate(this.x + this.size/2, this.y + this.size/2)
+            ctx.translate(this.x + this.extraSpin, this.y + this.extraSpin)
             ctx.rotate(angle)
-            ctx.translate(-this.x - this.size/2, -this.y - this.size/2)
+            ctx.translate(-this.x - this.extraSpin, -this.y - this.extraSpin)
             ctx.beginPath()
             for(let i = 11; i > 0; i--) {
                 const r = this.size*(i % 2 + 1)/2, omega = alpha * i
