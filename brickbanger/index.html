@@ -121,7 +121,7 @@
                     if (b.x - b.w/2 <= x && x <= b.x + b.w/2 && inVerticalRange) {
                         ball.speedY *= -1
                         bricks.splice(i,1) // destroy the brick
-                        if (bricks.length % 7 === 0) ball.speedY++
+                        if (bricks.length % 7 === 0) ball.speedY < 0 ? ball.speed-- : ball.speedY++
                         if (!hit) ping.ping()
                         hit = true
                     } 
@@ -130,7 +130,7 @@
                         || (b.x + b.w/2 - ball.r <= x && x <= b.x + b.w/2 + ball.r))) {
                         ball.speedX *= -1
                         bricks.splice(i,1) // destroy the brick
-                        if (bricks.length % 7 === 0) ball.speedY++
+                        if (bricks.length % 7 === 0) ball.speedY < 0 ? ball.speed-- : ball.speedY++
                         if (!hit) ping.ping()
                         hit = true
                     }
