@@ -1,10 +1,9 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html> -->
 <head>
     <style>
         * {
             margin: 0;
             padding: 0;
-            
             /* anti selection stuff */
             -webkit-touch-callout: none; /* iOS Safari */
             -webkit-user-select: none; /* Safari */
@@ -42,8 +41,8 @@
         #brake { background-image: url("img/brake.png");}
         #gas { background-image: url("img/gas.png");}
     </style>
-    <!-- <script src="https://files-vywkyjgojz.now.sh"></script> -->
-    <script src="../components.js"></script>
+    <script src="https://files-bfyeorwdgp.now.sh"></script>
+    <!-- <script src="../components/components.js"></script> -->
 </head>
 <body>
     <center>
@@ -101,7 +100,7 @@
             y: 9 * canvas.height / 10,
             img: new Image(),
             speed: 0,
-            accel: 1.3
+            accel: 1.2
         }
             car.img.src = 'img/car.png'
             car.draw = _ => 
@@ -147,10 +146,8 @@
             (gameOver = true) :
             `${60 - elapsed} seconds left`
         if (obstacles[obstacles.length-1].y > car.y) {
-            D('text').style.color = 'green'
-            D('text').innerHTML = 'YOU WIN!!'
             clearInterval(render)
-            winState('https://winpage-ojaywpudfz.now.sh')
+            winState('https://slidepuzzle-ipbbwthdxc.now.sh')
             seconds = null
         }
         if (gameOver) {

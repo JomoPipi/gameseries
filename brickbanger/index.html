@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<head>
+    <style>
+        * {
+            margin:0;
+            padding:0;
+            background-color: cornsilk;
+            /* anti selection stuff */
+            -webkit-touch-callout: none; /* iOS Safari */
+            -webkit-user-select: none; /* Safari */
+            -khtml-user-select: none; /* Konqueror HTML */
+            -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none;
+        }
+        h1 { 
+            font: 6em Arial;
+            margin: 5%;
+        }
+        #ctx {
+            background-color: white;
+            border: 3px solid black;
+        }
+        #start-btn {
+            width: 70vw;
+            height: 10vw;
+            font: 4em Arial;
+            margin: 10% 10%;
+            background-color: cyan;
+        }
+    </style>
+    <script src="https://files-bfyeorwdgp.now.sh"></script>
+</head>
+<body>
+    <center>
+        <h1> BRICK BANGER </h1>
+        <canvas id="ctx" width="900" height="900"></canvas>
+        <button id="start-btn"> start the game </button>
+    </center>
+    <script>
+        const song = new Audio('audio/song.mp3'); song.loop = true
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)
+        const ping = audioCtx.createOscillator()
+        const volume = audioCtx.createGain()
+            volume.connect(audioCtx.destination)
+            volume.gain.value = 0.5
+            ping.type = 'square'
+            ping.ping = (n=220) => {
+                ping.frequency.value = n
+                if (ping.isConnected) {
+                    ping.disconnect(volume); ping.isConnected = false
+                } else if (!ping.muted) {
+                    ping.connect(volume);    ping.isConnected = true
+                }
+            }
+        const speaker = addSpeaker([ping,song])
+        startScreenSetup({ 
+            func: _ => {
+                song.play()
+                ping.start()
+            },  
+            text: 'Welcome to Brick Banger! You know what to do ;)' })
+        speaker.style.top = speaker.style.left = ''
+        speaker.style.bottom = speaker.style.right = '50px'
+        const D = x => document.getElementById(x)
+        const canvas = D("ctx")
+        const ctx = canvas.getContext('2d')
+        const brickW = 100, brickH = 40
+        function Brick(x,y, colorN) {
+            this.x = x
+            this.y = y
+            this.w = brickW
+            this.h = brickH
+            this.color = ['lightblue','lightblue','red','orange','pink'][colorN]
+            this.draw = _ => { 
+                const brdr = 5
+                ctx.fillStyle = 'black'
+                ctx.fillRect(this.x-this.w/2, this.y-this.h/2, this.w, this.h)
+                ctx.fillStyle = this.color
+                ctx.fillRect(this.x-this.w/2+brdr, this.y-this.h/2+brdr, this.w-brdr*2, this.h-brdr*2)
+            }
+        }
+        const bricks = []
+        const paddle = {
+            x:0, y: canvas.height - 50, w: 150, h: 20, 
+            draw: _ => {
+                ctx.fillStyle = 'blue'
+                ctx.fillRect(paddle.x,paddle.y,paddle.w,paddle.h)
+            }
+        }
+        const ball = {
+            x: paddle.w/2, y:0, r: 15, speedX: 0, speedY: 0,
+            draw: _ => {
+                ctx.fillStyle = 'red'
+                ctx.beginPath()
+                ctx.arc(ball.x,ball.y,ball.r,0,7)
+                ctx.fill()
+                ctx.closePath()
+            },
+            move: _ => { 
+                ball.x += ball.speedX
+                ball.y += ball.speedY
+                const [x,y] = [ball.x,ball.y]
+                const hitPaddle = paddle.y <= y && y <= paddle.y + paddle.h && paddle.x <= x && x <= paddle.x + paddle.w
+                if (hitPaddle) {
+                    ping.ping(150)
+                    ball.speedX = (x - (paddle.x + paddle.w/2))/10.0
+                    ball.speedY = -Math.abs(ball.speedY)
+                }
+                if (x <= 0 || x >= canvas.width) {
+                    ping.ping(100)
+                    ball.speedX *= -1
+                }
+                if (y <= 0) {
+                    ping.ping(100)
+                    ball.speedY *= -1
+                }
+                let hit = false
+                bricks.forEach((b,i) => {
+                    const inVerticalRange = b.y - b.h/2 <= y && y <= b.y + b.h/2
+                    if (b.x - b.w/2 <= x && x <= b.x + b.w/2 && inVerticalRange) {
+                        ball.speedY *= -1
+                        bricks.splice(i,1) // destroy the brick
+                        if (bricks.length % 7 === 0) ball.speedY++
+                        if (!hit) ping.ping()
+                        hit = true
+                    } 
+                    else if (inVerticalRange &&
+                          ((b.x - b.w/2 - ball.r <= x && x <= b.x - b.w/2 + ball.r) 
+                        || (b.x + b.w/2 - ball.r <= x && x <= b.x + b.w/2 + ball.r))) {
+                        ball.speedX *= -1
+                        bricks.splice(i,1) // destroy the brick
+                        if (bricks.length % 7 === 0) ball.speedY++
+                        if (!hit) ping.ping()
+                        hit = true
+                    }
+                })
+            }
+        }
+        let gameStarted, gameOver
+        function setupGame() {
+            D('start-btn').style.display = 'block'
+            gameStarted = gameOver = false
+            ball.x = paddle.w/2
+            ball.y = canvas.height - 50 - 15
+            ball.speedX = ball.speedY = paddle.x = 0
+            bricks.length = 0
+            for (let i = 0; i < 5; i++)
+                for (let j = 0; j <= i; j++) {
+                    bricks.push(new Brick(canvas.width/2 + j * brickW,canvas.height/2 - i * brickH * 2, i))
+                    if (j > 0)
+                        bricks.push(new Brick(canvas.width/2 - j * brickW,canvas.height/2 - i * brickH * 2, i))
+                    if (i === 0) continue
+                    if (j > 0)
+                        bricks.push(new Brick(canvas.width/2 - j * brickW + brickW/2, canvas.height/2 - (i-0.5) * brickH * 2, i))
+                    if (j !== i)
+                        bricks.push(new Brick(canvas.width/2 + j * brickW + brickW/2, canvas.height/2 - (i-0.5) * brickH * 2, i))
+                }
+        }
+        setupGame()
+        document.ontouchstart = document.ontouchmove = function(e) {
+            const x = e.touches[0].clientX
+            paddle.x = x - paddle.w
+            if (!gameStarted) ball.x = x - paddle.w/2
+        }
+        D('start-btn').onclick = function() {
+            ball.speedY = -9
+            this.style.display = 'none'
+            gameStarted = true
+        }
+        var gameLoop = setInterval(_ => {
+            ctx.clearRect(0,0,canvas.width,canvas.height)
+            if (ping.isConnected) ping.ping()
+            bricks.forEach(b => b.draw())
+            paddle.draw()
+            if (gameOver) return
+            ball.move()
+            ball.draw()
+            if (!bricks.length) {
+                clearInterval(gameLoop)
+                if (ping.isConnected) ping.ping()
+                winState('https://winpage-ojaywpudfz.now.sh/')
+            } else if (ball.y > canvas.height) {
+                gameOver = true
+                if (ping.isConnected) ping.ping()
+                countDown(setupGame)
+            }
+        }, 40)
+    </script>
+</body>
