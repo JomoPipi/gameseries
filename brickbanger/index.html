@@ -31,7 +31,6 @@
     </style>
     <script src="https://files-bfyeorwdgp.now.sh"></script>
 </head>
-<body>
     <center>
         <h1> BRICK BANGER </h1>
         <canvas id="ctx" width="900" height="900"></canvas>
@@ -82,7 +81,7 @@
         }
         const bricks = []
         const paddle = {
-            x:0, y: canvas.height - 50, w: 150, h: 20, 
+            x:0, y: canvas.height - 50, w: 150, h: 50, 
             draw: _ => {
                 ctx.fillStyle = 'blue'
                 ctx.fillRect(paddle.x,paddle.y,paddle.w,paddle.h)
@@ -104,12 +103,13 @@
                 const hitPaddle = paddle.y <= y && y <= paddle.y + paddle.h && paddle.x <= x && x <= paddle.x + paddle.w
                 if (hitPaddle) {
                     ping.ping(150)
-                    ball.speedX = (x - (paddle.x + paddle.w/2))/10.0
+                    ball.speedX = (x - (paddle.x + paddle.w/2)) * Math.abs(ball.speedY) / 100.0
                     ball.speedY = -Math.abs(ball.speedY)
                 }
                 if (x <= 0 || x >= canvas.width) {
                     ping.ping(100)
-                    ball.speedX *= -1
+                    if (x <= 0) ball.speedX = Math.abs(ball.speedX)
+                    if (x >= canvas.width) ball.speedX = -Math.abs(ball.speedX)
                 }
                 if (y <= 0) {
                     ping.ping(100)
@@ -118,21 +118,21 @@
                 let hit = false
                 bricks.forEach((b,i) => {
                     const inVerticalRange = b.y - b.h/2 <= y && y <= b.y + b.h/2
-                    if (b.x - b.w/2 <= x && x <= b.x + b.w/2 && inVerticalRange) {
-                        ball.speedY *= -1
+                    const hitUpdate = i => {
                         bricks.splice(i,1) // destroy the brick
-                        if (bricks.length % 7 === 0) ball.speedY < 0 ? ball.speed-- : ball.speedY++
+                        if (bricks.length % 4 === 0) ball.speedY < 0 ? (ball.speed -= 2) : (ball.speedY += 2)
                         if (!hit) ping.ping()
                         hit = true
+                    }
+                    if (b.x - b.w/2 <= x && x <= b.x + b.w/2 && inVerticalRange) {
+                        ball.speedY *= -1
+                        hitUpdate(i)
                     } 
                     else if (inVerticalRange &&
                           ((b.x - b.w/2 - ball.r <= x && x <= b.x - b.w/2 + ball.r) 
                         || (b.x + b.w/2 - ball.r <= x && x <= b.x + b.w/2 + ball.r))) {
                         ball.speedX *= -1
-                        bricks.splice(i,1) // destroy the brick
-                        if (bricks.length % 7 === 0) ball.speedY < 0 ? ball.speed-- : ball.speedY++
-                        if (!hit) ping.ping()
-                        hit = true
+                        hitUpdate(i)
                     }
                 })
             }
@@ -164,7 +164,7 @@
             if (!gameStarted) ball.x = x - paddle.w/2
         }
         D('start-btn').onclick = function() {
-            ball.speedY = -9
+            ball.speedY = -20
             this.style.display = 'none'
             gameStarted = true
         }
