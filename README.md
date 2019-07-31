@@ -8,3 +8,4 @@ current sequence:
 4. Crazy Driva
 5. Slidepuzzle
 6. Brick Banger
+7. Flappy Jack
