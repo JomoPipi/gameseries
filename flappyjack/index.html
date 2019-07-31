@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<head>
+  	<style>
+        * { 
+            margin: 0;
+            padding: 0;
+            background-color: black; 
+        }
+        #text {
+            height: 5vh;
+            color: white;
+            font: 4em Arial;
+        }
+        #ctx{
+            background-color: cyan;
+            height: 84vh;
+            width: 100vw;
+        }
+  	</style>
+    <script src="https://files-kczaphluip.now.sh"></script>
+    <!-- <script src="../components/components.js"></script> -->
+</head>
+<body>
+	<center>
+        <h1 id="text"> Flappy Jack </h1>
+        <canvas id="ctx" width="900" height="1800"></canvas>
+	</center>
+<script>
+    const song = new Audio('audio/song.mp3'); song.loop = true
+    const D = x => document.getElementById(x)
+    const canvas = D('ctx')
+    const ctx = canvas.getContext('2d')
+    {
+        const spkr = addSpeaker(song)
+        spkr.style.backgroundColor = 'transparent'
+        spkr.style.left = ''
+        spkr.style.right = '50px'
+        spkr.style.top = '100px'
+    }
+    startScreenSetup({
+        text: 'Welcome to Flappy Jack -- get ready to tappy-tap -- <br> Pass 20 columns to win!!',
+        func: startGame
+    })
+    function Column(width, height, x, vertWidth){
+        this.x = x
+        this.w = width
+        this.yTop = height
+        this.yBot = height + vertWidth
+        this.color = 'red,blue,purple,pink,orange'.split`,`[~~(Math.random()*5)]
+        this.draw = function(){
+            ctx.fillStyle = this.color
+            ctx.fillRect(this.x, 0,         this.w, this.yTop)
+            ctx.fillRect(this.x, this.yBot, this.w, canvas.height - this.yBot)
+        }
+    }
+    function startGame() {
+        song.play()
+        const bird = {
+            x: 100,
+            y: canvas.height/2,
+            dy: [-35, 32], // for checking collision
+            w0: 100,
+            w1: 150,
+            speedX: 10,
+            speedY: 0,
+            accelY: 2,
+            color: 'green',
+            pics: [new Image(),new Image()],
+            move: _ => bird.y += (bird.speedY += bird.accelY),
+            draw: _ => {
+                const x = +(bird.speedY < 0), w = x ? bird.w0 : bird.w1
+                ctx.drawImage(bird.pics[x], bird.x - w/2, bird.y - w/2, w,w)
+            },
+            tap: _ => bird.speedY = -25
+        }
+        for (let x of [0,1]) bird.pics[x].src = `img/cake${x}.png`
+
+        const columns = []; let win = false
+        for (let i = 0; i < 20; i++){
+            const vertWidth = 500 - 10*i
+            const height = ~~(Math.random() * (canvas.height - vertWidth))
+            columns.push(new Column(50, height, 1000 + i * 700, vertWidth))
+        }
+        let gameLoop = setInterval(_ => {
+            if (win) return;
+            ctx.clearRect(0,0,canvas.width,canvas.height)        
+            columns.forEach(col => {
+                col.draw()
+                col.x -= bird.speedX
+                if (col.x <= bird.x && bird.x <= col.x + col.w 
+                && !(col.yTop <= bird.y + bird.dy[0] && bird.y + bird.dy[1] <= col.yBot))
+                    lose()
+            })
+            bird.move()
+            bird.draw()
+            if (bird.y < 0 || bird.y > canvas.height) lose()
+            if (columns[columns.length-1].x < 0) {
+                clearInterval(gameLoop)
+                win = true
+                winState()
+            }
+        }, 40)
+        function lose() { 
+            clearInterval(gameLoop)
+            song.pause()
+            song.currentTime = 0
+            countDown(startGame) 
+        }
+        document.ontouchstart = _ => bird.tap()
+    }
+</script>
+</body>

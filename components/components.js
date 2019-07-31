@@ -1,5 +1,14 @@
-// TODO: winner component, loser component
 
+HTMLPreset: {
+    const all = document.querySelector('*'), S = all.style
+    //anti selection stuff
+    S.WebkitTouchCallout = 'none'
+    S.webkitUserSelect = 'none'
+    S.khtmlUserSelect = 'none'
+    S.mozUserSelect = 'none'
+    S.msUserSelect = 'none'
+    S.userSelect = 'none'
+}
 // add title
 function startScreenSetup({func: f, text: t}) {
     const startScreen = document.createElement('div')
@@ -9,7 +18,7 @@ function startScreenSetup({func: f, text: t}) {
     S.top = '0px'
     S.left = '0px'
     S.width = '100vw'
-    S.height = '100vh'
+    S.height = '89vh'
     S.zIndex = '99'
     S.backgroundColor = 'yellow'
     S.textAlign = 'center'
@@ -73,10 +82,11 @@ function countDown(f) {
     number.style.display = 'block'
     number.style.font = '10em Arial'
     number.style.backgroundColor = 'salmon'
+    number.style.textAlign = 'center'
     number.id = 'number'
     document.body.append(number)
+    number.innerHTML = 'You Lose!!' 
     let n = 3
-    number.innerHTML = 'restart in ' + n 
     const shownum = setInterval(() => {
         number.innerHTML = 'restart in ' + n 
         if (n-- <= 0) {
