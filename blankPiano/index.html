@@ -7,7 +7,7 @@
                     padding: 0;
                 }
                 body {
-                    background-color:powderblue;
+                    background-color:rgb(150, 157, 168);
                 }
                 .imgbox {
                     display: grid;
@@ -24,16 +24,16 @@
                 #task {
                     color: purple;
                     position: absolute;
-                    bottom: 15px;
-                    left: 10px;
+                    bottom: 20vh;
+                    right: 5vw;
                     font: 2em Arial;
                 }
                 #play-tune {
                     position: absolute;
-                    bottom: 4em;
-                    left: 1em;
+                    bottom: 5vh;
+                    right: 5vw;
                     width: 20vw;
-                    height: 3vh;
+                    height: 15vh;
                     background-color: white;
                     font: 2em Arial;
                 }
@@ -51,13 +51,13 @@
             <img class="center-fit" id="kb5" src="img/kb5.png">
             <img class="center-fit" id="kb6" src="img/kb6.png">
             <img class="center-fit" id="kb7" src="img/kb7.png">
-            <button id="play-tune"> play tune </button>
-            <div id="task">PLAY 'TWINKLE TWINKLE LITTLE STAR'. DO IT.</div>
+            <div id="task">0/14</div>
+            <button id="play-tune"> play this </button>
         </div>
     </body>
     <script>
         const D = x => document.getElementById(x)
-        const last14Notes = Array(14).fill(0)
+        const last14Notes = Array(14).fill(-1)
         const keyboard = D('kb')
         const blackKeyMap = [[91,152],[210,269],[445,506],[563,623],[684,743]].map(x => x.map(y => y / 831.0))
         const audioCtx = new (window.AudioContext || window.webkitAudioContext);
@@ -76,6 +76,13 @@
             }
         }
         const correctNotes = [0,0,7,7,9,9,7,5,5,4,4,2,2,0]
+        const getProgress = _ => {
+            const idx = last14Notes.findIndex((_,i) => 
+                last14Notes.slice(i).every((x,j) => x === correctNotes[j]))
+            const result = idx < 0 ? 0 : 14 - idx
+            if (result) pulseGreen()
+            return result
+        }
         const checkWin = _ => 
             last14Notes.every((x,i) => x === correctNotes[i]) ?
             winState('https://balloonpop-yftoujsmdg.now.sh') : 0
@@ -101,6 +108,7 @@
                             sines[val].isConnected = true
                             last14Notes.shift()
                             last14Notes.push(val)
+                            D('task').innerHTML = getProgress() + '/14'
                             checkWin()
                             continue iterloop
                         }
@@ -118,6 +126,7 @@
                         D(id).style.zIndex = 1
                         last14Notes.shift()
                         last14Notes.push(val)
+                        D('task').innerHTML = getProgress() + '/14'
                         checkWin()
                         continue iterloop
                     }
@@ -142,6 +151,17 @@
                 delay(30 * (i === 6 || i === 13 ? 2 : 1))
             })
             songPlaying = false
+        }
+
+        // effect(s):
+        function pulseGreen() {
+            const g = 157, gx = 200 - g, box = D('kb')
+            ;(function go(x) {
+                setTimeout(_ => {
+                    box.style.backgroundColor = `rgb(150,${g+x},168)`
+                    if (x > 0) go(x-1)
+                }, 10)
+            })(gx)
         }
     </script>
 </html>
